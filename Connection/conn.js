@@ -6,8 +6,8 @@ const mongo_uri = process.env.MONGO_URI
 const connection = async () => {
   try {
     await mongoose.connect(mongo_uri, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 60000,
+      socketTimeoutMS: 60000,
     });
     console.log('Connection with MongoDB established');
   } catch (error) {
@@ -16,7 +16,7 @@ const connection = async () => {
 };
 
 mongoose.connection.on('error', err => {
-  console.error('MongoDB connection error:', err);
+  console.error('MongoDB connection error:'+ err);
 });
 
 mongoose.connection.on('disconnected', () => {
