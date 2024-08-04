@@ -1,10 +1,8 @@
 name: Deploy Backend to Azure Web App
-
 on:
   push:
     branches:
       - master
-
 jobs:
   build-and-deploy:
     runs-on: windows-latest
@@ -37,12 +35,11 @@ jobs:
     - name: Deploy to Azure Web App
       run: |
         az webapp deploy --resource-group alamgir --name Synergy-baackend-Api --src-path build.zip --type zip
-        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MONGO_URI=${{ secrets.MONGO_URI }} MY_EMAIL=${{ secrets.MY_EMAIL }} MY_EMAIL_PASSWORD=${{ secrets.MY_EMAIL_PASSWORD }} PORT=${{ secrets.PORT }}
+        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MONGO_URI="${{ secrets.MONGO_URI }}"
+        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL="${{ secrets.MY_EMAIL }}"
+        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL_PASSWORD="${{ secrets.MY_EMAIL_PASSWORD }}"
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        MY_EMAIL: ${{ secrets.MY_EMAIL }}
-        MY_EMAIL_PASSWORD: ${{ secrets.MY_EMAIL_PASSWORD }}
