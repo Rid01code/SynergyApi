@@ -1,0 +1,51 @@
+name: Deploy Backend to Azure Web App
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20.x'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the app
+      run: npm run build
+
+    - name: Create zip package of build artifacts
+      run: |
+        Compress-Archive -Path . -DestinationPath build.zip
+
+    - name: Install Azure CLI
+      run: |
+        Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+        Start-Process msiexec.exe -ArgumentList '/I .\AzureCLI.msi /quiet' -Wait
+
+    - name: Authenticate using service principal
+      run: |
+        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Deploy to Azure Web App
+      run: |
+        az webapp deploy --resource-group alamgir --name Synergy-baackend-Api --src-path build.zip --type zip
+        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MONGO_URI=${{ secrets.MONGO_URI }} MY_EMAIL=${{ secrets.MY_EMAIL }} MY_EMAIL_PASSWORD=${{ secrets.MY_EMAIL_PASSWORD }} PORT=${{ secrets.PORT }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        MY_EMAIL: ${{ secrets.MY_EMAIL }}
+        MY_EMAIL_PASSWORD: ${{ secrets.MY_EMAIL_PASSWORD }}
