@@ -38,6 +38,7 @@ jobs:
         az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MONGO_URI="${{ secrets.MONGO_URI }}"
         az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL="${{ secrets.MY_EMAIL }}"
         az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL_PASSWORD="${{ secrets.MY_EMAIL_PASSWORD }}"
+        az webapp config appsettings set --name Synergy-baackend-Api --resource-group alamgir --settings WEBSITE_NODE_DEFAULT_VERSION="~20"
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
