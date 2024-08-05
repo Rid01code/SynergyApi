@@ -28,13 +28,19 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'Synergy-API'
-          slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./build.zip
 
+      # Optional: If you need to set environment variables and you are using Azure CLI commands
+      - name: Login to Azure CLI
+        uses: azure/setup-azure-cli@v1
+
       - name: Set environment variables
         run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
           az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MONGO_URI="${{ secrets.MONGO_URI }}"
           az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MY_EMAIL="${{ secrets.MY_EMAIL }}"
           az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MY_EMAIL_PASSWORD="${{ secrets.MY_EMAIL_PASSWORD }}"
-          az webapp config appsettings set --name Synergy-API --resource-group alamgir --settings WEBSITE_NODE_DEFAULT_VERSION="~20"
+          az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings WEBSITE_NODE_DEFAULT_VERSION="~20"
