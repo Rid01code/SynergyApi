@@ -1,46 +1,40 @@
 name: Deploy Backend to Azure Web App
+
 on:
   push:
     branches:
       - master
+
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20.x'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.x'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Create zip package of build artifacts
-      run: |
-        Compress-Archive -Path . -DestinationPath build.zip
+      - name: Zip application files
+        run: zip -r build.zip .
 
-    - name: Install Azure CLI
-      run: |
-        Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-        Start-Process msiexec.exe -ArgumentList '/I .\AzureCLI.msi /quiet' -Wait
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'Synergy-API'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./build.zip
 
-    - name: Authenticate using service principal
-      run: |
-        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - name: Deploy to Azure Web App
-      run: |
-        az webapp deploy --resource-group alamgir --name Synergy-baackend-Api --src-path build.zip --type zip
-        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MONGO_URI="${{ secrets.MONGO_URI }}"
-        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL="${{ secrets.MY_EMAIL }}"
-        az webapp config appsettings set --resource-group alamgir --name Synergy-baackend-Api --settings MY_EMAIL_PASSWORD="${{ secrets.MY_EMAIL_PASSWORD }}"
-        az webapp config appsettings set --name Synergy-baackend-Api --resource-group alamgir --settings WEBSITE_NODE_DEFAULT_VERSION="~20"
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Set environment variables
+        run: |
+          az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MONGO_URI="${{ secrets.MONGO_URI }}"
+          az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MY_EMAIL="${{ secrets.MY_EMAIL }}"
+          az webapp config appsettings set --resource-group alamgir --name Synergy-API --settings MY_EMAIL_PASSWORD="${{ secrets.MY_EMAIL_PASSWORD }}"
+          az webapp config appsettings set --name Synergy-API --resource-group alamgir --settings WEBSITE_NODE_DEFAULT_VERSION="~20"
