@@ -27,9 +27,9 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname , '../front-end/.next' , 'index.html'))
 })
 
-const server = app.listen(port,() => {
-  console.log(`Listening on port ${port}`)
-})
+const server = app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
 
 const io = socketIo(server, {
   cors: {
